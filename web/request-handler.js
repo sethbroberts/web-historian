@@ -24,18 +24,18 @@ var actions = {
       // console.log(archive.isUrlInList(urltopost));
       archive.isUrlInList(urltopost, function(inList){
         if (inList) {
-          archive.isUrlArchived(urltopost, function(exists){
+          archive.isUrlArchived('/' + urltopost, function(exists){
             if (exists) {
-              httphelpers.sendRedirect(res, archive.paths.archivedSites + '/' + urltopost );
+              httphelpers.sendRedirect(res, '/' + urltopost );
             } else {
               httphelpers.sendRedirect(res, '/loading.html');
             }
           });
         } else {
           archive.addUrlToList(urltopost + '\n', function() {
-            // archive.readListOfUrls(function(list) {
-            //   archive.downloadUrls(list);
-            // });
+            archive.readListOfUrls(function(list) {
+              archive.downloadUrls(list);
+            });
             httphelpers.sendRedirect(res, '/loading.html', 302);
           });
         }
