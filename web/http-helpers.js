@@ -10,36 +10,54 @@ exports.headers = headers = {
   'Content-Type': "text/html"
 };
 
+// var mimetypes =  {
+//   '.html' : 'text/html',
+//   '.ico' : 'image/x-icon',
+//   '.jpg' : 'image/jpeg',
+//   '.png' : 'image/png',
+//   '.gif' : 'image/gif',
+//   '.css' : 'text/css',
+//   '.txt' : 'text/plain',
+//   '.js' : 'text/javascript'
+// };
+
 exports.serveAssets = function(res, asset, callback) {
-  // Write some code here that helps serve up your static files!
-  // (Static files are things like html (yours or archived from others...),
-  // css, or anything that doesn't change often.)
+  // filename = path.basename(asset) || 'index.html';
+  // var folder = (filename === 'index.html' || filename === 'styles.css') ? './public/' : '../archives/sites/';
 
-  filename = path.basename(asset) || 'index.html';
-  // check if asset exists in our folder
-  var filetype = filename.split('.')[1];
-  if (filetype === 'css') {
-    this.headers['Content-Type'] = "text/css";
-  } else {
-    this.headers['Content-Type'] = "text/html";
-  }
-  var that = this;
-  fs.readFile('./public/' + filename, 'utf8', function (err, data) {
+  // //
+  // var dotoffset = asset.url.lastIndexOf('.');
+  // var mimetype = dotoffset == -1 ? 'text/plain' : mimetypes[asset.url.substr(dotoffset)];
+  // mimetype = mimetype || 'text/html';
+
+  // exports.headers['Content-Type'] = mimetype;
+
+  // var filetype = filename.split('.')[1];
+  // if (filetype === 'css') {
+  //   this.headers['Content-Type'] = "text/css";
+  // } else {
+  //   this.headers['Content-Type'] = "text/html";
+  // }
+  // var that = this;
+
+
+  //serve any static files
+  //check if file requested exists in public folder
+  var encoding = { 'encoding': 'utf8' };
+  fs.readFile(archive.paths.siteAssets + asset, encoding, function (err, data) {
     if (err) {
-      return err;
+      fs.readFile(archive.paths.archivedSites + asset, encoding, function (err, data) {
+        if (err) {
+          exports.send404(res);
+        } else {
+          exports.sendResponse(res, data);
+        }
+      });
+    } else {
+      exports.sendResponse(res, data);
     }
-    that.sendResponse(res, data);
-  });  //??
-  // fs.stat('./public/' + filename, function (err, stat) {
-  //   if(err == null) {
-  //     readContent('./public/' + filename, function(err, data) {
-  //       that.sendResponse(res, data);
-  //     });
-  //   }
-  // });
+  });
 
-  // if yes, send response directly
-  // if not, 404
 
 };
 
@@ -54,6 +72,27 @@ exports.sendResponse = function (response, data, statusCode) {
   response.end();
 };
 
+exports.collectData = function (req, cb) {
+  var data = '';
+  req.on('data', function (chunk) {
+    data += chunk;
+  });
+  req.on('end', function () {
+    //var d2 = JSON.parse(data);
+    console.log('data to be collected:', data);
+    cb(data);
+  });
+};
+
+exports.send404 = function (res) {
+  exports.sendResponse(res, "nothing here", 404);
+};
+
+exports.sendRedirect = function(response, location, status) {
+  status = status || 302;
+  response.writeHead(status, { Location: location } );
+  response.end();
+};
 
 var readContent = function (filename, callback) {
   fs.readFile(filename, 'utf8', function (err, data) {

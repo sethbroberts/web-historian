@@ -3,12 +3,14 @@ var handler = require("./request-handler");
 var initialize = require("./initialize.js");
 var httphelpers = require("./http-helpers.js");
 var url = require("url");
+var path = require("path");
 
 var routes = {
   '/': handler.handleRequest,
-  '/styles.css': handler.handleRequest
+  // '/styles.css': handler.handleRequest
+  // '/www.google.com'
 };
-
+// http://127.0.0.1:8080/www.google.com
 // Why do you think we have this here?
 // HINT: It has to do with what's in .gitignore
 initialize();
@@ -16,7 +18,8 @@ initialize();
 var port = 8080;
 var ip = "127.0.0.1";
 var server = http.createServer(function (req, res) {
-  var pathname = url.parse(req.url).pathname;
+  var pathname = path.parse(req.url).dir;
+  //var pathname = url.parse(req.url).pathname;
   var route = routes[pathname];
   if (route) {
     route(req, res);
